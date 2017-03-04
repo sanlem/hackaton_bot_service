@@ -60,7 +60,11 @@ if __name__ == '__main__':
     loop = asyncio.get_event_loop()
     app = Application(loop)
 
-    server = HTTPServer(app)
+    # server = HTTPServer(app)
+    server = tornado.httpserver.HTTPServer(app, ssl_options={
+        "certfile": "/etc/letsencrypt/live/faq-bureaucracy.in.ua/fullchain.pem",
+        "keyfile": "/etc/letsencrypt/live/faq-bureaucracy.in.ua/privkey.pem",
+    })
     server.bind(port=options.port)
     server.start(1)
     logger.info('Server started at port {}...'.format(options.port))
