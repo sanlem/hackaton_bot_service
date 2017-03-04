@@ -6,6 +6,7 @@ import openpyxl
 # import pickle
 from tornado.options import options
 from tornado.httpserver import HTTPServer
+from tornado.httpclient import HTTPClient, AsyncHTTPClient
 
 import settings
 from urls import urlpatterns
@@ -19,8 +20,11 @@ class Application(tornado.web.Application):
         tornado.ioloop.IOLoop.configure('tornado.platform.asyncio.AsyncIOMainLoop')
         self.loop = io_loop
         self.bot_data = io_loop.run_until_complete(self.fetch_bots_data())
-        self.bot_data = { 'faqs': self.parse_xl('./FAQ.EStaff.xlsx')}
-        self.bot = ChatBot('bot1', self.bot_data)
+        self.bot_data = {'faqs': self.parse_xl('./FAQ.EStaff.xlsx')}
+        self.bots = {'bot1': ChatBot('bot1', self.bot_data)}
+
+        AsyncHTTPClient.configure("tornado.curl_httpclient.CurlAsyncHTTPClient")
+        self.async_http_client = AsyncHTTPClient()
         # load synonyms
         # self.synonyms = pickle.load(open('./utils/data/pickled_synonims.txt', 'rb'))
 
