@@ -1,4 +1,9 @@
+import logging
 from tornado.web import RequestHandler
+from tornado.escape import json_decode
+
+
+logger = logging.getLogger(__name__)
 
 
 class MainHandler(RequestHandler):
@@ -28,4 +33,8 @@ class TelegramHandler(RequestHandler):
             self.finish()
 
     async def post(self, *args, **kwargs):
-        pass
+        data = json_decode(self.request.body)
+        message = data['message']['text']
+        logger.info('Got message from telegram: {}'.format(data))
+        self.set_status(200)
+        self.finish()
