@@ -2,6 +2,7 @@ from collections import OrderedDict
 import tornado.web
 import asyncio
 import logging
+import openpyxl
 # import pickle
 from tornado.options import options
 from tornado.httpserver import HTTPServer
@@ -18,6 +19,7 @@ class Application(tornado.web.Application):
         tornado.ioloop.IOLoop.configure('tornado.platform.asyncio.AsyncIOMainLoop')
         self.loop = io_loop
         self.bot_data = io_loop.run_until_complete(self.fetch_bots_data())
+        self.bot_data = { 'faqs': self.parse_xl('./FAQ.EStaff.xlsx')}
         self.bot = ChatBot('bot1', self.bot_data)
         # load synonyms
         # self.synonyms = pickle.load(open('./utils/data/pickled_synonims.txt', 'rb'))
@@ -34,6 +36,20 @@ class Application(tornado.web.Application):
             })
         }
         return data
+
+    @staticmethod
+    def parse_xl(filename):
+        wb = openpyxl.load_workbook(filename)
+        sheet_names = wb.get_sheet_names()
+        worksheet = wb.get_sheet_by_name(sheet_names[0])
+        data = list(worksheet.values)
+        question_data = OrderedDict()
+
+        for row in data:
+            question, answer = row
+            question_data[question] = answer
+
+        return question_data
 
 
 if __name__ == '__main__':
