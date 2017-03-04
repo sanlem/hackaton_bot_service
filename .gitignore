@@ -1,0 +1,6 @@
+*.pyc
+
+!.gitkeep
+bot_service.log
+__pycache__
+.idea/
