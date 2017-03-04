@@ -42,3 +42,8 @@ class TelegramAPIWrapper:
         request = HTTPRequest(**params)
         response = await self.client.fetch(request, raise_error=False)
         print(response.boяdy)
+
+"""
+Set Telegram webhook
+curl -X POST -H "Cache-Control: no-cache" -H "Content-Type: application/x-www-form-urlencoded" -d 'url=https://faq-bureaucracy.in.ua:8443/telegram/' 'https://api.telegram.org/bot340724340:AAGqk-5O_EMn4nlQvLKBAhPQ0hYUv2SmJHQ/setWebhook'
+"""

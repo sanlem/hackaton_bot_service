@@ -2,7 +2,7 @@ import logging
 from tornado.options import define
 
 
-define('port', default=8000)
+define('port', default=8443)
 define('host', default='0.0.0.0')
 log_file = 'bot_service.log'
 define('log_file', default=log_file)
