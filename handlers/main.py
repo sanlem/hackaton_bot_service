@@ -97,7 +97,7 @@ class TelegramHandler(RequestHandler):
             if 'callback_query' in data:
                 machine = self.CONTEXT[conversation_id]['machine']
                 resp = machine.next_state(data['callback_query']['data'])
-                if resp.get('answers', None) is None:
+                if not resp.get('answers', None):
                     self.CONTEXT[conversation_id].update({
                         'state': 'main',
                         'machine': None

@@ -20,6 +20,7 @@ class Machine:
             #if answer_id in next_answs_ids:
             self.stateline.append(str(answer_id))
             self.current_question = self.guide['questions'][str(answer_id)]
+
             # print('new state: ', self.current_question)
             # print(self.current_question['answers'])
             result['description'] = self.current_question['description']
@@ -28,5 +29,4 @@ class Machine:
             #    raise KeyError
         else:
             result['answers'] = None
-
         return result
