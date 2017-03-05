@@ -53,18 +53,19 @@ class ChatBot:
         else:
             self.is_ready = True
 
-        # try:
-        #     self.guide_dictionary = corpora.Dictionary.load(self.guide_dict_file_name)
-        #     self.guide_corpus = corpora.MmCorpus(self.guide_corpus_file_name)
-        #     self.guide_lsi = models.LsiModel.load(self.guide_lsi_file_name)
-        #     self.guide_index = similarities.MatrixSimilarity.load(self.guide_index_file_name)
-        # except FileNotFoundError:
-        #     logger.info('Bot {} could not load its data.'.format(self.name))
-        #     self.is_ready = False
-        #     # self.load_guides_data(data['guides'])
-        #     self.load_data(data['guides'], data_type='guide')
-        # else:
-        #     self.is_ready = True
+        try:
+            self.guide_dictionary = corpora.Dictionary.load(self.guide_dict_file_name)
+            self.guide_corpus = corpora.MmCorpus(self.guide_corpus_file_name)
+            self.guide_lsi = models.LsiModel.load(self.guide_lsi_file_name)
+            self.guide_index = similarities.MatrixSimilarity.load(self.guide_index_file_name)
+        except FileNotFoundError:
+            logger.info('Bot {} could not load its data.'.format(self.name))
+            self.is_ready = False
+            # self.load_guides_data(data['guides'])
+            guide_names = [guide['guide_name'] for guide in data['guides']]
+            self.load_data(guide_names, data_type='guide')
+        else:
+            self.is_ready = True
 
     def load_data(self, data, data_type):
         assert data_type in ['faq', 'guide']
