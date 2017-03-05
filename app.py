@@ -22,8 +22,8 @@ class Application(tornado.web.Application):
         self.loop = io_loop
         self.bot_data = io_loop.run_until_complete(self.fetch_bots_data())
         self.bot_data = {'faqs': self.parse_xl('./FAQ.EStaff.xlsx')}
-        self.bots = {'bot1': ChatBot('bot1', self.bot_data)}
-
+        # self.bots = {'bot1': ChatBot('bot1', self.bot_data)}
+        self.bot = ChatBot('bot1', self.bot_data)
         AsyncHTTPClient.configure("tornado.curl_httpclient.CurlAsyncHTTPClient")
         self.async_http_client = AsyncHTTPClient()
 

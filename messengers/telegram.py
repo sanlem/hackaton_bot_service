@@ -14,25 +14,21 @@ class TelegramAPIWrapper:
             "chat_id": conversation_id,
         }
         if message_type == 'answer':
-            body['text'] = message[1]
+            body['text'] = message
         elif message_type == 'questions':
-            # body['text'] = "\n".join(["{}. {}".format(i, data['question'])
-            #                           for i, data in enumerate(message)])
-
             body.update({
-                # "text": "\n".join(["{}. {}".format(i, data['question'])
-                #                       for i, data in enumerate(message)]),
                 "text": "Возможно, Ві имели в виду что-нибудь из етого?",
                 "reply_markup": {
                     "inline_keyboard": [
                         [{
-                            "text": str(i),
+                            "text": qa,
                             "callback_data": str(i)
                         }]
-                        for i, _ in enumerate(message)
+                        for i, qa in enumerate(message)
                         ]
                 }
             })
+
         params = {
             "url": base_url.format("sendMessage"),
             "method": "POST",
@@ -42,7 +38,6 @@ class TelegramAPIWrapper:
         }
         request = HTTPRequest(**params)
         response = await self.client.fetch(request, raise_error=False)
-        print(response.boяdy)
 
 """
 Set Telegram webhook
