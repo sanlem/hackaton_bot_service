@@ -29,7 +29,7 @@ class TelegramHandler(RequestHandler):
         telegram = self.application.telegram
         data = json_decode(self.request.body)
         logger.info('Got message from telegram: {}'.format(data))
-
+        response = None
         if 'callback_query' not in data:
             conversation_id = data['message']['chat']['id']
             message = data['message']['text']
@@ -46,7 +46,10 @@ class TelegramHandler(RequestHandler):
             conversation_id = data['callback_query']['message']['chat']['id']
             message = data['callback_query']['data']
             index = int(message)
-            cached = self.CACHE.pop(conversation_id)
-            response = cached[index]
-            message_type = 'answer'
-        await telegram.send(conversation_id, response, message_type)
+
+            cached = self.CACHE.get(conversation_id, None)
+            if cached is not None:
+                response = cached[index]
+                message_type = 'answer'
+        if response is not None:
+            await telegram.send(conversation_id, response, message_type)

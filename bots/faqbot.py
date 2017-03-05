@@ -154,8 +154,6 @@ class ChatBot:
                 else:
                     stop = True
 
-            # convert to index list to fetch from mongo
-            # print([element[1] for element in to_return])
             to_return = [element[0] for element in to_return]
             bot_response = OrderedDict()
             qa_items = list(self.data['faqs'].items())

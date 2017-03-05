@@ -13,6 +13,7 @@ class TelegramAPIWrapper:
         body = {
             "chat_id": conversation_id,
         }
+        print(message)
         if message_type == 'answer':
             body['text'] = message
         elif message_type == 'questions':
