@@ -16,8 +16,8 @@ class NotReadyException(Exception):
 class ChatBot:
     SYNONYMS = SynonymDict()
 
-    def __init__(self, name, data):
-        self.name = name
+    def __init__(self, data):
+        self.name = 'bot'
         self.data = data
 
         self.morph = pymorphy2.MorphAnalyzer()
@@ -28,6 +28,11 @@ class ChatBot:
         self.faq_corpus_file_name = '{}faq_{}.mm'.format(DATA_FOLDER, self.name)
         self.faq_lsi_file_name = '{}faq_{}.lsi'.format(DATA_FOLDER, self.name)
         self.faq_index_file_name = '{}faq_{}.index'.format(DATA_FOLDER, self.name)
+
+        self.guide_dict_file_name = '{}guide_{}.dict'.format(DATA_FOLDER, self.name)
+        self.guide_corpus_file_name = '{}guide_{}.mm'.format(DATA_FOLDER, self.name)
+        self.guide_lsi_file_name = '{}guide_{}.lsi'.format(DATA_FOLDER, self.name)
+        self.guide_index_file_name = '{}guide_{}.index'.format(DATA_FOLDER, self.name)
 
         # gensim evaluation constants
         self.recognition_threshold = 0.7
@@ -43,37 +48,51 @@ class ChatBot:
         except FileNotFoundError:
             logger.info('Bot {} could not load its data.'.format(self.name))
             self.is_ready = False
-            self.load_faq_data(data['faqs'])
+            # self.load_faq_data(data['faqs'])
+            self.load_data(list(data['faqs'].keys()), data_type='faq')
         else:
             self.is_ready = True
 
-    def load_faq_data(self, data):
-        documents = list(data.keys())
-        # dictionary = self.prepare_dictionary(documents)
+        # try:
+        #     self.guide_dictionary = corpora.Dictionary.load(self.guide_dict_file_name)
+        #     self.guide_corpus = corpora.MmCorpus(self.guide_corpus_file_name)
+        #     self.guide_lsi = models.LsiModel.load(self.guide_lsi_file_name)
+        #     self.guide_index = similarities.MatrixSimilarity.load(self.guide_index_file_name)
+        # except FileNotFoundError:
+        #     logger.info('Bot {} could not load its data.'.format(self.name))
+        #     self.is_ready = False
+        #     # self.load_guides_data(data['guides'])
+        #     self.load_data(data['guides'], data_type='guide')
+        # else:
+        #     self.is_ready = True
 
+    def load_data(self, data, data_type):
+        assert data_type in ['faq', 'guide']
+        documents = data
         documents = [ChatBot.remove_crap(text) for text in documents if text]
         normalized = self.normalize_documents(documents, self.morph)
-        self.faq_dictionary = corpora.Dictionary(normalized)
-        self.faq_dictionary.save(self.faq_dict_file_name)
+        dictionary = corpora.Dictionary(normalized)
+        setattr(self, '{}_dictionary'.format(data_type), dictionary)
+        dictionary.save(getattr(self, '{}_dict_file_name'.format(data_type)))
 
-        faq_corpus = [self.faq_dictionary.doc2bow(doc) for doc in normalized]
-        corpora.MmCorpus.serialize(self.faq_corpus_file_name, faq_corpus)
-        self.faq_corpus = faq_corpus
+        corpus = [getattr(self, '{}_dictionary'.format(data_type)).doc2bow(doc) for doc in normalized]
+        corpora.MmCorpus.serialize(getattr(self, '{}_corpus_file_name'.format(data_type)), corpus)
+        setattr(self, '{}_corpus'.format(data_type), corpus)
 
-        faq_tfidf = models.TfidfModel(self.faq_corpus)
-        faq_corpus_tfidf = faq_tfidf[self.faq_corpus]
-        faq_num_topics = len(normalized) // 2
-        if faq_num_topics == 0:
-            faq_num_topics = 1
-        logger.info('Num of faq topics: {}'.format(faq_num_topics))
-        self.faq_lsi = models.LsiModel(faq_corpus_tfidf, id2word=self.faq_dictionary,
-                                       num_topics=faq_num_topics)
-        self.faq_lsi.save(self.faq_lsi_file_name)
+        tfidf = models.TfidfModel(corpus)
+        corpus_tfidf = tfidf[getattr(self, '{}_corpus'.format(data_type))]
+        num_topics = len(normalized) // 2
+        if num_topics == 0:
+            num_topics = 1
+        logger.info('Num of {} topics: {}'.format(data_type, num_topics))
+        setattr(self, '{}_lsi'.format(data_type), models.LsiModel(corpus_tfidf, id2word=getattr(self, '{}_dictionary'.format(data_type)),
+                                                                  num_topics=num_topics))
+        getattr(self, '{}_lsi'.format(data_type)).save(getattr(self, '{}_lsi_file_name'.format(data_type)))
 
         # transform corpus to LSI space and index it
-        faq_index = similarities.MatrixSimilarity(self.faq_lsi[self.faq_corpus])
-        faq_index.save(self.faq_index_file_name)
-        self.faq_index = faq_index
+        index = similarities.MatrixSimilarity(getattr(self, '{}_lsi'.format(data_type))[getattr(self, '{}_corpus'.format(data_type))])
+        index.save(getattr(self, '{}_index_file_name'.format(data_type)))
+        setattr(self, '{}_index'.format(data_type), index)
 
     @staticmethod
     def normalize_documents(documents, parser):
@@ -148,3 +167,4 @@ class ChatBot:
                 answer = next(iter(bot_response.items()))
                 bot_response = answer[1]
         return bot_response
+
