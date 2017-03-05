@@ -75,6 +75,7 @@ class TelegramHandler(RequestHandler):
                     if cached is not None:
                         response = cached[index]
                         message_type = 'answer'
+                        self.telegram.send(conversation_id, response, message_type)
                 else:
                     # guide was selected
                     index = int(message[1:])
