@@ -7,6 +7,7 @@ import openpyxl
 from tornado.options import options
 from tornado.httpserver import HTTPServer
 from tornado.httpclient import HTTPClient, AsyncHTTPClient
+from tornado.escape import json_decode
 
 import settings
 from urls import urlpatterns
@@ -22,6 +23,10 @@ class Application(tornado.web.Application):
         self.loop = io_loop
         self.bot_data = io_loop.run_until_complete(self.fetch_bots_data())
         self.bot_data = {'faqs': self.parse_xl('./FAQ.EStaff.xlsx')}
+        http = HTTPClient()
+        faqs = json_decode(http.fetch('http://localhost:8000/get_all_faq').body)
+        self.bot_data = {'faqs': faqs}
+        print(self.bot_data)
         # self.bots = {'bot1': ChatBot('bot1', self.bot_data)}
         self.bot = ChatBot('bot1', self.bot_data)
         AsyncHTTPClient.configure("tornado.curl_httpclient.CurlAsyncHTTPClient")
@@ -30,7 +35,6 @@ class Application(tornado.web.Application):
         self.telegram = TelegramAPIWrapper(self.async_http_client)
         # load synonyms
         # self.synonyms = pickle.load(open('./utils/data/pickled_synonims.txt', 'rb'))
-
         super().__init__(urlpatterns, debug=True)
 
     async def fetch_bots_data(self):
