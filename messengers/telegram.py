@@ -8,20 +8,21 @@ class TelegramAPIWrapper:
         self.client = client
 
     async def send(self, conversation_id, message,
-                   message_type, token):
+                   message_type, token='340724340:AAGqk-5O_EMn4nlQvLKBAhPQ0hYUv2SmJHQ'):
         base_url = 'https://api.telegram.org/bot%s/{}' % token
         body = {
             "chat_id": conversation_id,
         }
         if message_type == 'answer':
-            body['text'] = message
+            body['text'] = message[1]
         elif message_type == 'questions':
             # body['text'] = "\n".join(["{}. {}".format(i, data['question'])
             #                           for i, data in enumerate(message)])
 
             body.update({
-                "text": "\n".join(["{}. {}".format(i, data['question'])
-                                      for i, data in enumerate(message)])
+                # "text": "\n".join(["{}. {}".format(i, data['question'])
+                #                       for i, data in enumerate(message)]),
+                "text": "Возможно, Ві имели в виду что-нибудь из етого?",
                 "reply_markup": {
                     "inline_keyboard": [
                         [{

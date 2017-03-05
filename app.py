@@ -11,6 +11,7 @@ from tornado.httpclient import HTTPClient, AsyncHTTPClient
 import settings
 from urls import urlpatterns
 from bots.faqbot import ChatBot
+from messengers.telegram import TelegramAPIWrapper
 
 logger = logging.getLogger(__name__)
 
@@ -25,6 +26,8 @@ class Application(tornado.web.Application):
 
         AsyncHTTPClient.configure("tornado.curl_httpclient.CurlAsyncHTTPClient")
         self.async_http_client = AsyncHTTPClient()
+
+        self.telegram = TelegramAPIWrapper(self.async_http_client)
         # load synonyms
         # self.synonyms = pickle.load(open('./utils/data/pickled_synonims.txt', 'rb'))
 
