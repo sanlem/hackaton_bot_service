@@ -19,6 +19,7 @@ class ChatBot:
     def __init__(self, data):
         self.name = 'bot'
         self.data = data
+        self.default_answer = 'Пожалуйста, задайте уточняющий вопрос.'
 
         self.morph = pymorphy2.MorphAnalyzer()
 
@@ -133,6 +134,36 @@ class ChatBot:
                 new = new.replace(s, '')
         return new
 
+    def respond_guides(self, question):
+        question = self.remove_crap(question)
+        normalized_question = self.normalize_documents([question], self.morph)[0]
+
+        vec_bow = self.guide_dictionary.doc2bow(normalized_question)
+        vec_lsi = self.guide_lsi[vec_bow]  # convert the query to LSI space
+        sims = self.guide_index[vec_lsi]
+        sims = sorted(enumerate(sims), key=lambda item: -item[1])
+        if sims[0][1] < self.recognition_threshold:
+            bot_response = None
+        else:
+            # decide how many quesions need to return
+            sims_iterator = iter(sims)
+            to_return = [next(sims_iterator)]
+            stop = False
+            while not stop and len(to_return) < len(sims):
+                element = next(sims_iterator)
+                if to_return[0][1] - element[1] <= self.similarity_threshold:
+                    to_return.append(element)
+                else:
+                    stop = True
+
+            to_return = [element[0] for element in to_return]
+            bot_response = []
+            guides = self.data['guides']
+            for i in to_return:
+                bot_response.append(guides[i])
+
+        return bot_response
+
     def respond_faq(self, question):
         question = self.remove_crap(question)
         normalized_question = self.normalize_documents([question], self.morph)[0]
@@ -142,7 +173,7 @@ class ChatBot:
         sims = self.faq_index[vec_lsi]
         sims = sorted(enumerate(sims), key=lambda item: -item[1])
         if sims[0][1] < self.recognition_threshold:
-            bot_response = 'Пожалуйста, задайте уточняющий вопрос.'
+            bot_response = self.default_answer
         else:
             # decide how many quesions need to return
             sims_iterator = iter(sims)

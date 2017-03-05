@@ -1,7 +1,7 @@
 import logging
 from tornado.web import RequestHandler
 from tornado.escape import json_decode
-from messengers.telegram import TelegramAPIWrapper
+from bots.machine import Machine
 
 
 logger = logging.getLogger(__name__)
@@ -58,13 +58,44 @@ class TelegramHandler(RequestHandler):
                     if conversation_id in self.CACHE:
                         self.CACHE.pop(conversation_id)
 
+                guides = self.application.bot.respond_guides(message)
+                if guides is not None and response != self.application.bot.default_answer:
+                    await telegram.send(conversation_id, response, message_type)
+                    await telegram.send_guides(conversation_id, guides)
+                elif guides is not None:
+                    await telegram.send_guides(conversation_id, guides)
+                else:
+                    await telegram.send(conversation_id, response, message_type)
             else:
                 message = data['callback_query']['data']
-                index = int(message)
+                if message[0] != 'g':
+                    index = int(message)
 
-                cached = self.CACHE.get(conversation_id, None)
-                if cached is not None:
-                    response = cached[index]
-                    message_type = 'answer'
-            if response is not None:
-                await telegram.send(conversation_id, response, message_type)
+                    cached = self.CACHE.get(conversation_id, None)
+                    if cached is not None:
+                        response = cached[index]
+                        message_type = 'answer'
+                else:
+                    # guide was selected
+                    index = int(message[1:])
+                    guide = self.application.bot_data['guides'][index]
+                    machine = Machine(guide)
+                    self.CONTEXT[conversation_id].update({
+                        'state': 'guide',
+                        'machine': machine
+                    })
+                    response = machine.current_question['description']
+                    answers = machine.current_question['answers']
+                    await telegram.send_guide_item(response, answers, conversation_id)
+        else:
+            if 'callback_query' in data:
+                machine = self.CONTEXT[conversation_id]['machine']
+                resp = machine.next_state(data['callback_query']['data'])
+                if resp['answers'] is None:
+                    self.CONTEXT[conversation_id].update({
+                        'state': 'main',
+                        'machine': None
+                    })
+                    await telegram.send(conversation_id, resp['description'], 'answer')
+                else:
+                    await telegram.send_guide_item(resp['description'], resp['answers'], conversation_id)
