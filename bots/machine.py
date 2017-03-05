@@ -1,3 +1,9 @@
+import logging
+
+
+logger = logging.getLogger(__name__)
+
+
 class Machine:
     def __init__(self, guide):
         self.guide = guide
@@ -7,16 +13,17 @@ class Machine:
 
     def next_state(self, answer_id):
         answers = self.current_question['answers']
+        logger.info('Current guide item answers: {}'.format(answers))
         result = {}
         if answers:
-            next_answs_ids = [answer['next'] for answer in answers]
-            if answer_id in next_answs_ids:
-                self.stateline.append(str(answer_id))
-                self.current_question = self.guide['questions'][str(answer_id)]
-                # print('new state: ', self.current_question)
-                # print(self.current_question['answers'])
-                result['description'] = self.current_question['description']
-                result['answers'] = answers
+            #next_answs_ids = [answer['next'] for answer in answers]
+            #if answer_id in next_answs_ids:
+            self.stateline.append(str(answer_id))
+            self.current_question = self.guide['questions'][str(answer_id)]
+            # print('new state: ', self.current_question)
+            # print(self.current_question['answers'])
+            result['description'] = self.current_question['description']
+            result['answers'] = self.current_question['answers']
             #else:
             #    raise KeyError
         else:

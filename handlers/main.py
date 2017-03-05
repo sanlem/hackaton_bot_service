@@ -102,6 +102,7 @@ class TelegramHandler(RequestHandler):
                         'state': 'main',
                         'machine': None
                     })
+                    logger.info('Last guide item data: {}'.format(resp))
                     await telegram.send(conversation_id, resp['description'], 'answer')
                 else:
                     await telegram.send_guide_item(resp['description'], resp['answers'], conversation_id)
