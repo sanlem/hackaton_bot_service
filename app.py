@@ -26,7 +26,9 @@ class Application(tornado.web.Application):
         http = HTTPClient()
         faqs = json_decode(http.fetch('http://localhost:8000/get_all_faq').body)
         guides = json_decode(http.fetch('http://localhost:8000/get_all_guides').body)
-        self.bot_data = {'faqs': self.parse_xl('./FAQ.EStaff.xlsx'), 'guides': guides}
+        logger.info('Fetched guides: {}'.format([g['guide_name'] for g in guides]))
+        # self.bot_data = {'faqs': self.parse_xl('./FAQ.EStaff.xlsx'), 'guides': guides}
+        self.bot_data = {'faqs': faqs, 'guides': guides}
         print(self.bot_data)
         # self.bots = {'bot1': ChatBot('bot1', self.bot_data)}
         self.bot = ChatBot(self.bot_data)

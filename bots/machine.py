@@ -17,8 +17,8 @@ class Machine:
                 # print(self.current_question['answers'])
                 result['description'] = self.current_question['description']
                 result['answers'] = answers
-            else:
-                raise KeyError
+            #else:
+            #    raise KeyError
         else:
             result['answers'] = None
 

@@ -1,6 +1,10 @@
 from tornado.httpclient import HTTPRequest
 from tornado.escape import json_decode, json_encode, url_escape
 import datetime
+import logging
+
+
+logger = logging.getLogger(__name__)
 
 
 class TelegramAPIWrapper:
@@ -9,6 +13,7 @@ class TelegramAPIWrapper:
 
     async def send_guide_item(self, response, answers, conversation_id,
                               token='340724340:AAGqk-5O_EMn4nlQvLKBAhPQ0hYUv2SmJHQ'):
+        logger.info('Sending guide item...')
         base_url = 'https://api.telegram.org/bot%s/{}' % token
         body = {
             "chat_id": conversation_id,
@@ -17,7 +22,7 @@ class TelegramAPIWrapper:
                 "inline_keyboard": [
                     [{
                         "text": answer['value'],
-                        "callback_data": answer['next']
+                        "callback_data": str(answer['next'])
                     }]
                     for answer in answers
                     ]
@@ -33,6 +38,7 @@ class TelegramAPIWrapper:
         }
         request = HTTPRequest(**params)
         response = await self.client.fetch(request, raise_error=False)
+        logger.info('Sending guide item response: {}'.format(response.body))
 
     async def send_guides(self, conversation_id, guides,
                           token='340724340:AAGqk-5O_EMn4nlQvLKBAhPQ0hYUv2SmJHQ'):
@@ -44,7 +50,7 @@ class TelegramAPIWrapper:
             "reply_markup": {
                 "inline_keyboard": [
                     [{
-                        "text": guide,
+                        "text": guide['guide_name'],
                         "callback_data": 'g' + str(i)
                     }]
                     for i, guide in enumerate(guides)
@@ -61,6 +67,7 @@ class TelegramAPIWrapper:
         }
         request = HTTPRequest(**params)
         response = await self.client.fetch(request, raise_error=False)
+        logger.info('Send guides response: {}'.format(response.body))
 
     async def send(self, conversation_id, message,
                    message_type, token='340724340:AAGqk-5O_EMn4nlQvLKBAhPQ0hYUv2SmJHQ'):

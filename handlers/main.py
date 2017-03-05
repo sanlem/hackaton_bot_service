@@ -59,23 +59,28 @@ class TelegramHandler(RequestHandler):
                         self.CACHE.pop(conversation_id)
 
                 guides = self.application.bot.respond_guides(message)
+                logger.info('Guides: {}'.format(guides))
+                logger.info('FAQS: {}'.format(response))
                 if guides is not None and response != self.application.bot.default_answer:
+                    logger.info('Sending both guides and faqs')
                     await telegram.send(conversation_id, response, message_type)
                     await telegram.send_guides(conversation_id, guides)
                 elif guides is not None:
+                    logger.info('Sending only guides')
                     await telegram.send_guides(conversation_id, guides)
                 else:
+                    logger.info('Sending only faqs')
                     await telegram.send(conversation_id, response, message_type)
             else:
                 message = data['callback_query']['data']
                 if message[0] != 'g':
                     index = int(message)
-
+                    logger.info('Responding to question from cache...')
                     cached = self.CACHE.get(conversation_id, None)
                     if cached is not None:
                         response = cached[index]
                         message_type = 'answer'
-                        self.telegram.send(conversation_id, response, message_type)
+                        await telegram.send(conversation_id, response, message_type)
                 else:
                     # guide was selected
                     index = int(message[1:])
@@ -92,7 +97,7 @@ class TelegramHandler(RequestHandler):
             if 'callback_query' in data:
                 machine = self.CONTEXT[conversation_id]['machine']
                 resp = machine.next_state(data['callback_query']['data'])
-                if resp['answers'] is None:
+                if resp.get('answers', None) is None:
                     self.CONTEXT[conversation_id].update({
                         'state': 'main',
                         'machine': None

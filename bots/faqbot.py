@@ -41,32 +41,32 @@ class ChatBot:
 
         # self.is_ready = False
 
-        try:
-            self.faq_dictionary = corpora.Dictionary.load(self.faq_dict_file_name)
-            self.faq_corpus = corpora.MmCorpus(self.faq_corpus_file_name)
-            self.faq_lsi = models.LsiModel.load(self.faq_lsi_file_name)
-            self.faq_index = similarities.MatrixSimilarity.load(self.faq_index_file_name)
-        except FileNotFoundError:
-            logger.info('Bot {} could not load its data.'.format(self.name))
-            self.is_ready = False
+        #try:
+        #    self.faq_dictionary = corpora.Dictionary.load(self.faq_dict_file_name)
+        #    self.faq_corpus = corpora.MmCorpus(self.faq_corpus_file_name)
+        #    self.faq_lsi = models.LsiModel.load(self.faq_lsi_file_name)
+        #    self.faq_index = similarities.MatrixSimilarity.load(self.faq_index_file_name)
+        #except FileNotFoundError:
+        #    logger.info('Bot {} could not load its data.'.format(self.name))
+        #    self.is_ready = False
             # self.load_faq_data(data['faqs'])
-            self.load_data(list(data['faqs'].keys()), data_type='faq')
-        else:
-            self.is_ready = True
+        self.load_data(list(data['faqs'].keys()), data_type='faq')
+        #else:
+        #    self.is_ready = True
 
-        try:
-            self.guide_dictionary = corpora.Dictionary.load(self.guide_dict_file_name)
-            self.guide_corpus = corpora.MmCorpus(self.guide_corpus_file_name)
-            self.guide_lsi = models.LsiModel.load(self.guide_lsi_file_name)
-            self.guide_index = similarities.MatrixSimilarity.load(self.guide_index_file_name)
-        except FileNotFoundError:
-            logger.info('Bot {} could not load its data.'.format(self.name))
-            self.is_ready = False
+        #try:
+        #    self.guide_dictionary = corpora.Dictionary.load(self.guide_dict_file_name)
+        #    self.guide_corpus = corpora.MmCorpus(self.guide_corpus_file_name)
+        #    self.guide_lsi = models.LsiModel.load(self.guide_lsi_file_name)
+        #    self.guide_index = similarities.MatrixSimilarity.load(self.guide_index_file_name)
+        #except FileNotFoundError:
+        #    logger.info('Bot {} could not load its data.'.format(self.name))
+        #    self.is_ready = False
             # self.load_guides_data(data['guides'])
-            guide_names = [guide['guide_name'] for guide in data['guides']]
-            self.load_data(guide_names, data_type='guide')
-        else:
-            self.is_ready = True
+        guide_names = [guide['guide_name'] for guide in data['guides']]
+        self.load_data(guide_names, data_type='guide')
+        #else:
+        #    self.is_ready = True
 
     def load_data(self, data, data_type):
         assert data_type in ['faq', 'guide']
